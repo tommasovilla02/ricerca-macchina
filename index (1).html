@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="description" content="Ricerca Macchina: annunci di auto nuove, km 0 e usate vicino a Bologna, con filtri per prezzo, km, carburante, cambio e colore.">
+<!-- Google Search Console: incolla qui il meta tag di verifica -->
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font-size:14px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+img{max-width:100%}[hidden]{display:none!important}
+</style>
+<title>Ricerca Macchina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky bar with result count + sort; left rail of filters (drawer on phone); card grid; plate-style price tags. */
+:root{
+  --bg:#f3f4f6; --surface:#ffffff; --sunk:#e8eaee; --line:#d5d9e0;
+  --fg:#1b1f27; --muted:#5d6574; --accent:#1c3f94; --accent-fg:#ffffff; --accent-soft:#e3e9f7;
+  --plate:#ffffff; --plate-band:#1c3f94; --plate-ink:#111318;
+  --good:#1f7a4d; --warn:#a15c00; --star:#d99a00;
+  --f-display:"Archivo Narrow","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111419; --surface:#191d24; --sunk:#222731; --line:#2f3541;
+  --fg:#e9ecf1; --muted:#9aa3b2; --accent:#7f9ff0; --accent-fg:#0d1530; --accent-soft:#1f2a47;
+  --plate:#f1f2f4; --plate-band:#24489f; --plate-ink:#111318;
+  --good:#5cc490; --warn:#e3a54a; --star:#f2c14e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111419; --surface:#191d24; --sunk:#222731; --line:#2f3541;
+  --fg:#e9ecf1; --muted:#9aa3b2; --accent:#7f9ff0; --accent-fg:#0d1530; --accent-soft:#1f2a47;
+  --plate:#f1f2f4; --plate-band:#24489f; --plate-ink:#111318;
+  --good:#5cc490; --warn:#e3a54a; --star:#f2c14e; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1360px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{background:var(--surface);border-bottom:1px solid var(--line)}
+header.top .wrap{padding-block:18px 14px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,4vw,34px);letter-spacing:.01em;margin:0;line-height:1;text-wrap:balance}
+h1 small{display:block;font-family:var(--f-body);font-weight:500;font-size:13px;color:var(--muted);letter-spacing:0;margin-top:6px}
+.origin{font-family:var(--f-mono);font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+.origin b{color:var(--fg);font-weight:500}
+.layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;padding-block:20px 48px}
+@media (max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}}
+
+/* filters */
+aside.filters{align-self:start;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100vh - 24px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:18px}
+@media (max-width:900px){aside.filters{position:static;max-height:none}aside.filters.closed .fbody{display:none}}
+.fhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.fhead h2{font-family:var(--f-display);font-size:19px;margin:0;font-weight:600}
+.fbody{display:flex;flex-direction:column;gap:18px}
+.group{display:flex;flex-direction:column;gap:8px}
+.group > label, .glabel{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.row{display:flex;gap:8px;align-items:center}
+.row > *{min-width:0;flex:1}
+input[type=number],input[type=text],input[type=url],select{width:100%;font:inherit;font-size:14px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-variant-numeric:tabular-nums}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.dash{flex:0 0 auto;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:5px 11px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.swatches{display:flex;flex-wrap:wrap;gap:7px}
+.sw{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);cursor:pointer;padding:0;position:relative}
+.sw[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:2px}
+.range2{position:relative;height:26px}
+.range2 input{position:absolute;inset:0;width:100%;appearance:none;-webkit-appearance:none;background:none;pointer-events:none;margin:0}
+.range2 .track{position:absolute;left:0;right:0;top:11px;height:4px;border-radius:2px;background:var(--sunk)}
+.range2 .fill{position:absolute;top:11px;height:4px;border-radius:2px;background:var(--accent)}
+.range2 input::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:18px;height:18px;border-radius:50%;background:var(--surface);border:2px solid var(--accent);cursor:grab}
+.range2 input::-moz-range-thumb{pointer-events:auto;width:16px;height:16px;border-radius:50%;background:var(--surface);border:2px solid var(--accent);cursor:grab}
+input[type=range].single{width:100%;accent-color:var(--accent)}
+.hint{font-size:12px;color:var(--muted)}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.check input{accent-color:var(--accent);width:16px;height:16px}
+.btn{font:inherit;font-size:14px;font-weight:600;border-radius:8px;padding:8px 14px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.ghost{background:none;border-color:transparent;color:var(--accent);padding:6px 8px}
+.toggle-filters{display:none}
+@media (max-width:900px){.toggle-filters{display:inline-flex}}
+
+/* toolbar */
+.main{display:flex;flex-direction:column;gap:16px;min-width:0}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.count{font-family:var(--f-display);font-size:22px;font-weight:600}
+.count span{font-family:var(--f-body);font-size:14px;font-weight:400;color:var(--muted);margin-left:6px}
+.toolbar .row{flex:0 1 auto}
+.toolbar select{width:auto}
+
+/* portals */
+.portals{background:var(--accent-soft);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.portals p{margin:0;font-size:14px}
+.plinks{display:flex;flex-wrap:wrap;gap:8px}
+.plinks a{font-size:14px;font-weight:600;color:var(--accent);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;text-decoration:none}
+.plinks a:hover{border-color:var(--accent)}
+
+/* cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;color:inherit;text-decoration:none;transition:border-color .15s,transform .15s}
+.card:hover{border-color:var(--accent)}
+@media (prefers-reduced-motion:no-preference){.card:hover{transform:translateY(-2px)}}
+.photo{aspect-ratio:4/3;max-width:100%;background:var(--sunk);position:relative;overflow:hidden}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.photo svg{width:100%;height:100%;display:block}
+.cond{position:absolute;left:10px;top:10px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:5px;background:var(--surface);color:var(--fg);border:1px solid var(--line)}
+.cond.nuova{background:var(--good);color:#fff;border-color:transparent}
+.cond.km0{background:var(--accent);color:var(--accent-fg);border-color:transparent}
+.star{position:absolute;right:8px;top:8px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:18px;cursor:pointer;display:grid;place-items:center;line-height:1}
+.star[aria-pressed="true"]{color:var(--star)}
+.body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:9px;flex:1}
+.plate{align-self:flex-start;display:inline-flex;align-items:stretch;border:1.5px solid var(--plate-ink);border-radius:5px;overflow:hidden;background:var(--plate);color:var(--plate-ink)}
+.plate i{width:10px;background:var(--plate-band)}
+.plate b{font-family:var(--f-mono);font-weight:500;font-size:19px;letter-spacing:.04em;padding:2px 10px;font-variant-numeric:tabular-nums}
+.old{font-family:var(--f-mono);font-size:13px;color:var(--muted);text-decoration:line-through;margin-left:8px;align-self:center}
+.pricerow{display:flex;align-items:center;flex-wrap:wrap}
+.title{font-family:var(--f-display);font-weight:600;font-size:18px;line-height:1.15;margin:0}
+.title small{display:block;font-family:var(--f-body);font-weight:400;font-size:13.5px;color:var(--muted);margin-top:3px}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-size:13px;margin:0}
+.specs div{display:flex;justify-content:space-between;gap:6px;border-bottom:1px dotted var(--line);padding-bottom:3px}
+.specs dt{color:var(--muted)}
+.specs dd{margin:0;font-variant-numeric:tabular-nums;text-align:right}
+.where{margin-top:auto;display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.where .src{font-family:var(--f-mono);font-size:11.5px}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:32px 20px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--fg);font-family:var(--f-display);font-size:20px;margin-bottom:6px}
+
+/* add form */
+details.add{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+details.add summary{cursor:pointer;padding:12px 16px;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:8px}
+details.add summary::-webkit-details-marker{display:none}
+details.add form{padding:0 16px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+details.add form .full{grid-column:1/-1}
+details.add label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+.msg{font-size:13px;color:var(--good)}
+.msg.err{color:var(--warn)}
+.del{font:inherit;font-size:12px;background:none;border:none;color:var(--warn);cursor:pointer;padding:0;text-decoration:underline}
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div class="wrap">
+    <h1>Ricerca Macchina<small>Annunci raccolti dai portali, filtrabili e ordinabili. Distanze misurate da Bologna.</small></h1>
+    <div class="origin" id="origin"><span>Annunci: <b id="totCount">–</b></span><span>Ultima raccolta: <b id="lastUpdate">–</b></span></div>
+  </div>
+</header>
+
+<div class="wrap layout">
+  <aside class="filters" id="filters">
+    <div class="fhead">
+      <h2>Filtri</h2>
+      <div class="row" style="flex:0 0 auto">
+        <button class="btn ghost" id="reset" type="button">Azzera</button>
+        <button class="btn ghost toggle-filters" id="toggleF" type="button" aria-expanded="true">Nascondi</button>
+      </div>
+    </div>
+    <div class="fbody">
+      <div class="group">
+        <span class="glabel">Stato</span>
+        <div class="chips" id="fCond"></div>
+      </div>
+      <div class="group">
+        <label for="fBrand">Marca e modello</label>
+        <select id="fBrand"></select>
+        <select id="fModel"></select>
+      </div>
+      <div class="group">
+        <label for="pMin">Prezzo (€)</label>
+        <div class="row"><input type="number" id="pMin" min="0" step="500" placeholder="da"><span class="dash">–</span><input type="number" id="pMax" min="0" step="500" placeholder="a"></div>
+        <div class="range2" data-for="price"><div class="track"></div><div class="fill"></div><input type="range" id="pR1" aria-label="Prezzo minimo"><input type="range" id="pR2" aria-label="Prezzo massimo"></div>
+        <label class="check"><input type="checkbox" id="fBudget"> Solo nel budget 10.000–25.000 €</label>
+      </div>
+      <div class="group">
+        <label for="kMin">Chilometri</label>
+        <div class="row"><input type="number" id="kMin" min="0" step="1000" placeholder="da"><span class="dash">–</span><input type="number" id="kMax" min="0" step="1000" placeholder="a"></div>
+        <div class="range2" data-for="km"><div class="track"></div><div class="fill"></div><input type="range" id="kR1" aria-label="Km minimi"><input type="range" id="kR2" aria-label="Km massimi"></div>
+      </div>
+      <div class="group">
+        <label for="yMin">Anno di immatricolazione</label>
+        <div class="row"><select id="yMin"></select><span class="dash">–</span><select id="yMax"></select></div>
+      </div>
+      <div class="group">
+        <label for="dMax">Distanza da Bologna</label>
+        <input type="range" class="single" id="dMax" min="10" max="400" step="10">
+        <span class="hint" id="dLabel"></span>
+      </div>
+      <div class="group">
+        <span class="glabel">Carburante</span>
+        <div class="chips" id="fFuel"></div>
+      </div>
+      <div class="group">
+        <span class="glabel">Cambio</span>
+        <div class="chips" id="fGear"></div>
+      </div>
+      <div class="group">
+        <span class="glabel">Colore</span>
+        <div class="swatches" id="fColor"></div>
+        <span class="hint" id="colorLabel">Tutti i colori</span>
+      </div>
+      <div class="group">
+        <span class="glabel">Venditore</span>
+        <div class="chips" id="fSeller"></div>
+      </div>
+      <div class="group">
+        <span class="glabel">Altro</span>
+        <label class="check"><input type="checkbox" id="fDrop"> Solo prezzi ribassati</label>
+        <label class="check"><input type="checkbox" id="fSaved"> Solo salvati ★</label>
+        <input type="text" id="fText" placeholder="Cerca nel titolo (es. R-Line, DSG)">
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="toolbar">
+      <div class="count" id="count">–<span>annunci</span></div>
+      <div class="row">
+        <label for="sort" class="hint">Ordina</label>
+        <select id="sort">
+          <option value="price-asc">Prezzo crescente</option>
+          <option value="price-desc">Prezzo decrescente</option>
+          <option value="km-asc">Km crescenti</option>
+          <option value="year-desc">Più recenti (anno)</option>
+          <option value="dist-asc">Più vicine a Bologna</option>
+          <option value="eurkm-asc">Prezzo + km (miglior compromesso)</option>
+        </select>
+      </div>
+    </div>
+
+    <section class="portals" aria-label="Cerca sui portali">
+      <p><strong>Cerca anche direttamente sui portali</strong> con i filtri attuali. I link si aggiornano quando cambi marca, modello, prezzo, km, anno, carburante e cambio (dove il portale lo permette).</p>
+      <div class="plinks" id="plinks"></div>
+    </section>
+
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" hidden><strong id="emptyT">Nessun annuncio con questi filtri</strong><span id="emptyS">Allarga prezzo, km o distanza, oppure usa i link ai portali qui sopra.</span></div>
+
+    <details class="add" id="addBox">
+      <summary><span>Aggiungi un annuncio trovato da te</span><span class="hint">incolla il link e i dati principali</span></summary>
+      <form id="addForm">
+        <label class="full">Link dell'annuncio<input type="url" id="aUrl" required placeholder="https://…"></label>
+        <label>Marca<select id="aBrand" required></select></label>
+        <label>Modello<input type="text" id="aModel" required placeholder="es. Taigo"></label>
+        <label>Versione<input type="text" id="aVersion" placeholder="es. 1.0 TSI R-Line DSG"></label>
+        <label>Stato<select id="aCond"><option value="usata">Usata</option><option value="km0">Km 0</option><option value="nuova">Nuova</option></select></label>
+        <label>Prezzo (€)<input type="number" id="aPrice" required min="0"></label>
+        <label>Km<input type="number" id="aKm" min="0" value="0"></label>
+        <label>Anno<input type="number" id="aYear" min="1990" max="2027"></label>
+        <label>Carburante<select id="aFuel"></select></label>
+        <label>Cambio<select id="aGear"><option value="automatico">Automatico</option><option value="manuale">Manuale</option></select></label>
+        <label>Colore<select id="aColor"></select></label>
+        <label>Città<input type="text" id="aCity" placeholder="es. Imola"></label>
+        <label>Distanza da Bologna (km)<input type="number" id="aDist" min="0"></label>
+        <label>Venditore<select id="aSeller"><option value="concessionario">Concessionario</option><option value="privato">Privato</option></select></label>
+        <div class="full row" style="justify-content:flex-start;gap:12px"><button class="btn primary" type="submit" style="flex:0 0 auto">Salva annuncio</button><span class="msg" id="addMsg" role="status"></span></div>
+      </form>
+    </details>
+  </main>
+</div>
+
+<script>
+(function(){
+const BRANDS={
+ "Volkswagen":["Taigo","T-Cross","T-Roc","Polo","Golf","Tiguan","ID.3"],
+ "Jeep":["Avenger","Renegade","Compass"],
+ "Toyota":["Yaris Cross","Yaris","C-HR","Corolla Cross"],
+ "Dacia":["Sandero","Duster","Jogger","Spring"],
+ "BYD":["Dolphin Surf","Dolphin","Atto 2","Atto 3"],
+ "Fiat":["600","Panda","Grande Panda","500e"],
+ "Renault":["Captur","Clio","Renault 5","Austral"],
+ "Peugeot":["2008","208","3008"],
+ "Citroën":["C3","C3 Aircross","ë-C3"],
+ "Opel":["Mokka","Corsa","Frontera"],
+ "Skoda":["Kamiq","Fabia","Karoq","Elroq"],
+ "Seat":["Arona","Ibiza"],
+ "Cupra":["Formentor","Born"],
+ "Hyundai":["Kona","Bayon","i20"],
+ "Kia":["Stonic","Niro","Sportage","EV3"],
+ "Ford":["Puma","Kuga"],
+ "Mazda":["CX-30","2 Hybrid"],
+ "Nissan":["Juke","Qashqai"],
+ "Suzuki":["Vitara","S-Cross","Swift"],
+ "MG":["ZS","MG3","MG4"],
+ "Lancia":["Ypsilon"],
+ "Alfa Romeo":["Junior","Tonale"]
+};
+const FUELS=[["benzina","Benzina"],["ibrida","Ibrida"],["plugin","Ibrida plug-in"],["elettrica","Elettrica"],["gpl","GPL"],["metano","Metano"],["diesel","Diesel"]];
+const GEARS=[["","Indifferente"],["automatico","Automatico"],["manuale","Manuale"]];
+const CONDS=[["","Tutte"],["nuova","Nuova"],["km0","Km 0"],["usata","Usata"]];
+const SELLERS=[["","Tutti"],["concessionario","Concessionario"],["privato","Privato"]];
+const COLORS=[["bianco","#f5f5f2"],["nero","#16181c"],["grigio","#7d838c"],["argento","#c4c8ce"],["blu","#2a4f9e"],["rosso","#b3262d"],["verde","#3c6e47"],["beige","#d8c7a5"],["marrone","#6b4a33"],["giallo","#e3b522"],["arancione","#d9702a"]];
+const P_MAX=60000,K_MAX=200000,D_ANY=400,Y_MIN=2015,Y_MAX=2026;
+const DEF={cond:"",brand:"",model:"",pMin:0,pMax:P_MAX,kMin:0,kMax:K_MAX,yMin:Y_MIN,yMax:Y_MAX,dMax:D_ANY,fuels:[],gear:"",colors:[],seller:"",budget:false,drop:false,saved:false,text:"",sort:"price-asc"};
+let F=Object.assign({},DEF);
+try{const s=JSON.parse(localStorage.getItem("rm-filters")||"null");if(s)F=Object.assign({},DEF,s)}catch(e){}
+let ALL=[], db=null, loaded=false;
+const $=id=>document.getElementById(id);
+const nf=new Intl.NumberFormat("it-IT");
+const fmtE=n=>nf.format(n)+" €";
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const save=()=>{try{localStorage.setItem("rm-filters",JSON.stringify(F))}catch(e){}};
+
+/* ---------- build controls ---------- */
+function chips(el,opts,get,set,multi){
+  el.innerHTML="";
+  opts.forEach(([v,l])=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=l;b.dataset.v=v;
+    b.addEventListener("click",()=>{set(v);sync();});el.appendChild(b)});
+  el._refresh=()=>el.querySelectorAll(".chip").forEach(b=>b.setAttribute("aria-pressed",String(multi?get().includes(b.dataset.v):get()===b.dataset.v)));
+}
+chips($("fCond"),CONDS,()=>F.cond,v=>F.cond=v);
+chips($("fGear"),GEARS,()=>F.gear,v=>F.gear=v);
+chips($("fSeller"),SELLERS,()=>F.seller,v=>F.seller=v);
+chips($("fFuel"),FUELS,()=>F.fuels,v=>{F.fuels=F.fuels.includes(v)?F.fuels.filter(x=>x!==v):[...F.fuels,v]},true);
+const cEl=$("fColor");
+COLORS.forEach(([n,h])=>{const b=document.createElement("button");b.type="button";b.className="sw";b.style.background=h;b.title=n;b.setAttribute("aria-label",n);b.dataset.v=n;
+  b.addEventListener("click",()=>{F.colors=F.colors.includes(n)?F.colors.filter(x=>x!==n):[...F.colors,n];sync()});cEl.appendChild(b)});
+cEl._refresh=()=>{cEl.querySelectorAll(".sw").forEach(b=>b.setAttribute("aria-pressed",String(F.colors.includes(b.dataset.v))));
+  $("colorLabel").textContent=F.colors.length?F.colors.join(", ")+" (gli annunci senza colore indicato vengono esclusi)":"Tutti i colori"};
+
+const bSel=$("fBrand"),mSel=$("fModel");
+bSel.innerHTML='<option value="">Tutte le marche</option>'+Object.keys(BRANDS).sort().map(b=>`<option>${esc(b)}</option>`).join("");
+function fillModels(){mSel.innerHTML='<option value="">Tutti i modelli</option>'+(F.brand?BRANDS[F.brand]||[]:[]).map(m=>`<option>${esc(m)}</option>`).join("");mSel.disabled=!F.brand;mSel.value=F.model}
+bSel.addEventListener("change",()=>{F.brand=bSel.value;F.model="";fillModels();sync()});
+mSel.addEventListener("change",()=>{F.model=mSel.value;sync()});
+
+const years=[];for(let y=Y_MAX;y>=2005;y--)years.push(y);
+$("yMin").innerHTML=years.slice().reverse().map(y=>`<option value="${y}">${y===2005?"fino al 2005":y}</option>`).join("");
+$("yMax").innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join("");
+$("yMin").addEventListener("change",e=>{F.yMin=+e.target.value;sync()});
+$("yMax").addEventListener("change",e=>{F.yMax=+e.target.value;sync()});
+
+function dual(key,minId,maxId,r1,r2,max,step){
+  const a=$(r1),b=$(r2),box=a.parentElement,fill=box.querySelector(".fill");
+  [a,b].forEach(r=>{r.min=0;r.max=max;r.step=step});
+  const lo=key+"Min",hi=key+"Max";
+  function draw(){a.value=F[lo];b.value=F[hi];fill.style.left=(F[lo]/max*100)+"%";fill.style.right=(100-F[hi]/max*100)+"%";
+    $(minId).value=F[lo]>0?F[lo]:"";$(maxId).value=F[hi]<max?F[hi]:""}
+  a.addEventListener("input",()=>{F[lo]=Math.min(+a.value,F[hi]);sync()});
+  b.addEventListener("input",()=>{F[hi]=Math.max(+b.value,F[lo]);sync()});
+  $(minId).addEventListener("change",e=>{F[lo]=Math.max(0,Math.min(+e.target.value||0,max));if(F[lo]>F[hi])F[hi]=F[lo];sync()});
+  $(maxId).addEventListener("change",e=>{const v=e.target.value===""?max:+e.target.value;F[hi]=Math.max(Math.min(v,max),F[lo]);sync()});
+  box._draw=draw;
+}
+dual("p","pMin","pMax","pR1","pR2",P_MAX,500);
+dual("k","kMin","kMax","kR1","kR2",K_MAX,1000);
+$("dMax").addEventListener("input",e=>{F.dMax=+e.target.value;sync()});
+$("fBudget").addEventListener("change",e=>{F.budget=e.target.checked;if(F.budget){F.pMin=10000;F.pMax=25000}sync()});
+$("fDrop").addEventListener("change",e=>{F.drop=e.target.checked;sync()});
+$("fSaved").addEventListener("change",e=>{F.saved=e.target.checked;sync()});
+$("fText").addEventListener("input",e=>{F.text=e.target.value;sync(true)});
+$("sort").addEventListener("change",e=>{F.sort=e.target.value;sync()});
+$("reset").addEventListener("click",()=>{F=Object.assign({},DEF);sync()});
+$("toggleF").addEventListener("click",()=>{const f=$("filters");f.classList.toggle("closed");const c=f.classList.contains("closed");$("toggleF").textContent=c?"Mostra":"Nascondi";$("toggleF").setAttribute("aria-expanded",String(!c))});
+if(window.matchMedia("(max-width:900px)").matches){$("filters").classList.add("closed");$("toggleF").textContent="Mostra";$("toggleF").setAttribute("aria-expanded","false")}
+
+function refreshControls(skipText){
+  ["fCond","fGear","fSeller","fFuel","fColor"].forEach(id=>$(id)._refresh());
+  bSel.value=F.brand;fillModels();
+  document.querySelectorAll(".range2").forEach(r=>r._draw());
+  $("yMin").value=F.yMin;$("yMax").value=F.yMax;
+  $("dMax").value=F.dMax;$("dLabel").textContent=F.dMax>=D_ANY?"Qualsiasi distanza":"Entro "+F.dMax+" km";
+  $("fBudget").checked=F.budget&&F.pMin===10000&&F.pMax===25000;F.budget=$("fBudget").checked;
+  $("fDrop").checked=F.drop;$("fSaved").checked=F.saved;$("sort").value=F.sort;
+  if(!skipText)$("fText").value=F.text;
+}
+
+/* ---------- filtering ---------- */
+function match(c){
+  if(F.cond&&c.condition!==F.cond)return false;
+  if(F.brand&&c.brand!==F.brand)return false;
+  if(F.model&&c.model.toLowerCase()!==F.model.toLowerCase())return false;
+  if(c.price<F.pMin||(F.pMax<P_MAX&&c.price>F.pMax))return false;
+  if(c.km<F.kMin||(F.kMax<K_MAX&&c.km>F.kMax))return false;
+  const y=c.year||Y_MAX;
+  if((F.yMin>2005&&y<F.yMin)||y>F.yMax)return false;
+  if(F.dMax<D_ANY&&c.source!=="listino"&&(c.distanceKm==null||c.distanceKm>F.dMax))return false;
+  if(F.fuels.length&&!F.fuels.includes(c.fuel))return false;
+  if(F.gear&&c.gearbox!==F.gear)return false;
+  if(F.colors.length&&!F.colors.includes(c.color))return false;
+  if(F.seller&&c.sellerType!==F.seller)return false;
+  if(F.drop&&!(c.priceOld>c.price))return false;
+  if(F.saved&&!c.saved)return false;
+  if(F.text){const t=(c.brand+" "+c.model+" "+c.version).toLowerCase();if(!F.text.toLowerCase().split(/\s+/).filter(Boolean).every(w=>t.includes(w)))return false}
+  return true;
+}
+const SORTS={
+ "price-asc":(a,b)=>a.price-b.price,"price-desc":(a,b)=>b.price-a.price,"km-asc":(a,b)=>a.km-b.km,
+ "year-desc":(a,b)=>((b.year||Y_MAX+1)*12+(b.month||0))-((a.year||Y_MAX+1)*12+(a.month||0)),
+ "dist-asc":(a,b)=>(a.distanceKm??999)-(b.distanceKm??999),
+ "eurkm-asc":(a,b)=>(a.price+a.km*0.08)-(b.price+b.km*0.08)
+};
+
+/* ---------- rendering ---------- */
+const COLORHEX=Object.fromEntries(COLORS);
+const FUEL_L=Object.fromEntries(FUELS);
+const MESI=["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"];
+function silhouette(c){
+  const body=COLORHEX[c.color]||"var(--muted)";
+  return `<svg viewBox="0 0 400 300" role="img" aria-label="${esc(c.brand+' '+c.model)}"><rect width="400" height="300" fill="var(--sunk)"/>
+  <path d="M60 196 L72 160 Q80 142 104 138 L150 130 Q170 102 200 98 L262 96 Q290 96 306 120 L322 140 Q346 144 350 166 L352 196 Z" fill="${body}" stroke="var(--fg)" stroke-opacity=".35" stroke-width="2"/>
+  <path d="M160 132 Q176 110 200 108 L258 106 Q280 106 292 124 L300 136 Z" fill="var(--surface)" fill-opacity=".55"/>
+  <circle cx="120" cy="198" r="24" fill="var(--fg)"/><circle cx="120" cy="198" r="10" fill="var(--sunk)"/>
+  <circle cx="294" cy="198" r="24" fill="var(--fg)"/><circle cx="294" cy="198" r="10" fill="var(--sunk)"/>
+  <text x="200" y="258" text-anchor="middle" font-family="Archivo Narrow, Arial Narrow, sans-serif" font-size="22" font-weight="600" fill="var(--muted)">Foto sul sito dell'annuncio</text></svg>`;
+}
+function card(c){
+  const cl=c.source==="listino"?"Nuova · listino":c.condition==="nuova"?"Nuova":c.condition==="km0"?"Km 0":"Usata";
+  const date=c.year?(c.month?MESI[c.month-1]+" ":"")+c.year:"non immatr.";
+  const img=c.img?`<img src="${esc(c.img)}" alt="${esc(c.brand+' '+c.model)}" loading="lazy" referrerpolicy="no-referrer" data-fallback="1">`:silhouette(c);
+  return `<a class="card" href="${esc(c.url)}" target="_blank" rel="noopener" data-id="${esc(c.id)}">
+    <div class="photo">${img}<span class="cond ${c.condition}">${cl}</span>
+      <button class="star" type="button" data-star="${esc(c.id)}" aria-pressed="${!!c.saved}" aria-label="Salva annuncio">${c.saved?"★":"☆"}</button></div>
+    <div class="body">
+      <div class="pricerow"><span class="plate"><i></i><b>${fmtE(c.price)}</b></span>${c.priceOld>c.price?`<span class="old">${fmtE(c.priceOld)}</span>`:""}</div>
+      <h3 class="title">${esc(c.brand+" "+c.model)}<small>${esc(c.version)}</small></h3>
+      ${c.note?`<p class="hint" style="margin:0">${esc(c.note)}</p>`:""}<dl class="specs">
+        <div><dt>Km</dt><dd>${nf.format(c.km)}</dd></div>
+        <div><dt>Anno</dt><dd>${esc(date)}</dd></div>
+        <div><dt>Carburante</dt><dd>${esc(FUEL_L[c.fuel]||c.fuel)}</dd></div>
+        <div><dt>Cambio</dt><dd>${c.gearbox==="automatico"?"Automatico":"Manuale"}</dd></div>
+        <div><dt>Colore</dt><dd>${esc(c.color||"n.d.")}</dd></div>
+        <div><dt>Distanza</dt><dd>${c.distanceKm!=null?"~"+c.distanceKm+" km":c.source==="listino"?"concessionari":"n.d."}</dd></div>
+      </dl>
+      <div class="where"><span>${esc(c.city)}${c.prov?" ("+esc(c.prov)+")":""} · ${esc(c.seller||c.sellerType)}</span><span class="src">${esc(c.source)}${c.source==="manuale"?` · <button class="del" type="button" data-del="${esc(c.id)}">rimuovi</button>`:""}</span></div>
+    </div></a>`;
+}
+function render(){
+  const list=ALL.filter(match).sort(SORTS[F.sort]||SORTS["price-asc"]);
+  $("count").innerHTML=`${list.length}<span>${list.length===1?"annuncio":"annunci"} su ${ALL.length}</span>`;
+  $("grid").innerHTML=list.map(card).join("");
+  $("grid").querySelectorAll("img[data-fallback]").forEach(im=>{
+    const c=ALL.find(x=>x.id===im.closest(".card").dataset.id);
+    const swap=()=>{const p=im.parentElement;if(!p)return;im.remove();p.insertAdjacentHTML("afterbegin",silhouette(c))};
+    if(im.complete&&im.naturalWidth===0)swap();else im.addEventListener("error",swap,{once:true});
+  });
+  const e=$("empty");
+  if(!loaded){e.hidden=false;$("emptyT").textContent="Carico gli annunci…";$("emptyS").textContent="Gli annunci raccolti compaiono qui. Puoi anche aggiungerne uno a mano in fondo alla pagina."}
+  else if(!ALL.length){e.hidden=false;$("emptyT").textContent="Ancora nessun annuncio salvato";$("emptyS").textContent="Chiedi a Claude di raccogliere annunci per un modello, oppure aggiungine uno con il modulo in fondo."}
+  else{e.hidden=list.length>0;$("emptyT").textContent="Nessun annuncio con questi filtri";$("emptyS").textContent="Allarga prezzo, km o distanza, oppure usa i link ai portali qui sopra."}
+  $("totCount").textContent=ALL.length;
+  const last=ALL.map(c=>c.addedAt).filter(Boolean).sort().pop();
+  $("lastUpdate").textContent=last?new Date(last+"T12:00:00").toLocaleDateString("it-IT",{day:"numeric",month:"short",year:"numeric"}):"–";
+  portals();
+}
+let tmr;
+function sync(skipText){refreshControls(skipText);save();clearTimeout(tmr);tmr=setTimeout(render,skipText?150:0)}
+
+/* ---------- portal deep links ---------- */
+const BRAND_SITE={"Volkswagen":"https://www.volkswagen.it/","Jeep":"https://www.jeep-official.it/","Toyota":"https://www.toyota.it/","Dacia":"https://www.dacia.it/","BYD":"https://www.byd.com/it","Fiat":"https://www.fiat.it/","Renault":"https://www.renault.it/","Peugeot":"https://www.peugeot.it/","Citroën":"https://www.citroen.it/","Opel":"https://www.opel.it/","Skoda":"https://www.skoda-auto.it/","Seat":"https://www.seat.it/","Cupra":"https://www.cupraofficial.it/","Hyundai":"https://www.hyundai.com/it/","Kia":"https://www.kia.com/it/","Ford":"https://www.ford.it/","Mazda":"https://www.mazda.it/","Nissan":"https://www.nissan.it/","Suzuki":"https://auto.suzuki.it/","MG":"https://www.mgmotor.eu/it-IT","Lancia":"https://www.lancia.it/","Alfa Romeo":"https://www.alfaromeo.it/"};
+const slug=s=>s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+function portals(){
+  const b=F.brand,m=F.model;
+  const as=new URLSearchParams({atype:"C",cy:"I",zip:"40121",sort:"price",desc:"0"});
+  if(F.dMax<D_ANY)as.set("zipr",String(F.dMax));
+  if(F.pMin>0)as.set("pricefrom",F.pMin);if(F.pMax<P_MAX)as.set("priceto",F.pMax);
+  if(F.kMin>0)as.set("kmfrom",F.kMin);if(F.kMax<K_MAX)as.set("kmto",F.kMax);
+  if(F.yMin>2005)as.set("fregfrom",F.yMin);if(F.yMax<Y_MAX)as.set("fregto",F.yMax);
+  if(F.gear)as.set("gear",F.gear==="automatico"?"A":"M");
+  const fmap={benzina:"B",diesel:"D",elettrica:"E",ibrida:"2",plugin:"2",gpl:"L",metano:"C"};
+  const fu=[...new Set(F.fuels.map(f=>fmap[f]))];if(fu.length)as.set("fuel",fu.join(","));
+  if(F.cond==="usata")as.set("ustate","U");else if(F.cond)as.set("ustate","N");
+  const asPath="https://www.autoscout24.it/lst"+(b?"/"+slug(b)+(m?"/"+slug(m):""):"");
+  const q=[b,m].filter(Boolean).join(" ");
+  const links=[
+    ["AutoScout24",asPath+"?"+as],
+    ["Subito",`https://www.subito.it/annunci-emilia-romagna/vendita/auto/${q?"?q="+encodeURIComponent(q):""}`],
+    ["Automobile.it",`https://www.automobile.it/${b?slug(b)+(m?"-"+slug(m):"")+"-":""}bologna`],
+    ["AutoSupermarket",`https://autosupermarket.it/auto-usate/emilia-romagna/bologna${b?"/"+slug(b)+(m?"/"+slug(m):""):""}`],
+    ["Automoto.it",`https://www.automoto.it/auto-usate${b?"/"+slug(b)+(m?"/"+slug(m):""):""}`],
+    ...(b&&BRAND_SITE[b]?[["Sito "+b+" (nuove e pronta consegna)",BRAND_SITE[b]]]:[]),
+    ["AutoUncle (prezzi medi)",`https://www.autouncle.it/it/auto-usate${b?"/"+encodeURIComponent(b)+(m?"/"+encodeURIComponent(m):""):""}`]
+  ];
+  $("plinks").innerHTML=links.map(([n,u])=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(n)} ↗</a>`).join("");
+}
+
+/* ---------- storage: Claude database, or this browser when hosted elsewhere ---------- */
+const LS={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+async function setSaved(c,v){
+  if(db)return db.collection("listings").doc(c.id).update({saved:v});
+  const st=new Set(LS.get("rm-saved",[]));v?st.add(c.id):st.delete(c.id);LS.set("rm-saved",[...st]);
+}
+async function addDoc(d){
+  if(db)return db.collection("listings").doc(d.id).set(d);
+  const m=LS.get("rm-manual",[]);m.push(d);LS.set("rm-manual",m);
+  const st=new Set(LS.get("rm-saved",[]));st.add(d.id);LS.set("rm-saved",[...st]);ALL.push(d);render();
+}
+async function delDoc(id){
+  if(db)return db.collection("listings").doc(id).delete();
+  LS.set("rm-manual",LS.get("rm-manual",[]).filter(d=>d.id!==id));ALL=ALL.filter(c=>c.id!==id);render();
+}
+/* ---------- star / delete ---------- */
+const pendingDel=new Set();
+$("grid").addEventListener("click",async e=>{
+  const s=e.target.closest("[data-star]"),d=e.target.closest("[data-del]");
+  if(!s&&!d)return;
+  e.preventDefault();e.stopPropagation();
+  if(s){const c=ALL.find(x=>x.id===s.dataset.star);if(!c)return;const v=!c.saved;c.saved=v;render();
+    try{await setSaved(c,v)}catch(err){c.saved=!v;render()}}
+  if(d){const id=d.dataset.del;
+    if(!pendingDel.has(id)){pendingDel.add(id);d.textContent="conferma rimozione";setTimeout(()=>pendingDel.delete(id),4000);return}
+    try{await delDoc(id)}catch(err){d.textContent="non rimosso"}}
+});
+
+/* ---------- add form ---------- */
+$("aBrand").innerHTML=Object.keys(BRANDS).sort().map(b=>`<option>${esc(b)}</option>`).join("")+"<option>Altro</option>";
+$("aFuel").innerHTML=FUELS.map(([v,l])=>`<option value="${v}">${l}</option>`).join("");
+$("aColor").innerHTML='<option value="">Non indicato</option>'+COLORS.map(([n])=>`<option>${n}</option>`).join("");
+$("addForm").addEventListener("submit",async e=>{
+  e.preventDefault();const msg=$("addMsg");msg.className="msg";
+  const url=$("aUrl").value.trim();
+  let h=0;for(const ch of url)h=(h*31+ch.charCodeAt(0))>>>0;
+  const id="m"+h.toString(16)+Date.now().toString(36);
+  const yr=+$("aYear").value||null;
+  const doc={id,brand:$("aBrand").value,model:$("aModel").value.trim(),version:$("aVersion").value.trim(),price:+$("aPrice").value,priceOld:null,
+    km:+$("aKm").value||0,year:yr,month:null,fuel:$("aFuel").value,gearbox:$("aGear").value,color:$("aColor").value,city:$("aCity").value.trim(),prov:"",
+    distanceKm:$("aDist").value===""?null:+$("aDist").value,seller:$("aSeller").value==="privato"?"Privato":"Concessionario",sellerType:$("aSeller").value,
+    condition:$("aCond").value,url,img:"",source:"manuale",addedAt:new Date().toISOString().slice(0,10),saved:true,note:""};
+  try{await addDoc(doc);msg.textContent=db?"Annuncio salvato e aggiunto ai preferiti.":"Annuncio salvato in questo browser e aggiunto ai preferiti.";e.target.reset()}
+  catch(err){msg.className="msg err";msg.textContent=err&&err.code==="permission_denied"?"Non hai i permessi per salvare su questa pagina.":"Salvataggio non riuscito, riprova."}
+});
+
+/* ---------- data ---------- */
+refreshControls();render();
+(async()=>{
+  if(window.claude&&window.claude.use){try{db=await window.claude.use("db")}catch(e){db=null}}
+  if(!db){
+    try{const r=await fetch("listings.json",{cache:"no-store"});const data=r.ok?await r.json():[];
+      const st=new Set(LS.get("rm-saved",[]));
+      ALL=data.concat(LS.get("rm-manual",[])).map(c=>Object.assign({},c,{saved:st.has(c.id)}));}catch(e){ALL=[]}
+    loaded=true;render();return}
+  db.collection("listings").limit(1000).onSnapshot(snap=>{
+    ALL=snap.docs.map(d=>Object.assign({id:d.id},d.data()));loaded=true;render();
+  },()=>{loaded=true;render()});
+})();
+})();
+</script>
+
+</body>
+</html>
